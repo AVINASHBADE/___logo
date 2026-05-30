@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Annu - Video Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #060818;
+            color: #f0f4ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(236,72,153,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.08) 0%, transparent 60%);
+            animation: bgMove 12s ease-in-out infinite alternate;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes bgMove {
+            0%   { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(3%, 3%) rotate(3deg); }
+        }
+
+        /* ── HEADER ── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0;
+            background: rgba(6, 8, 24, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.5);
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a5b4fc, #f9a8d4, #6ee7b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+        }
+
+        .video-count {
+            background: rgba(99,102,241,0.2);
+            border: 1px solid rgba(99,102,241,0.4);
+            color: #a5b4fc;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+        }
+
+        /* ── GRID ── */
+        .container {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+            padding: 1.2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ── VIDEO CARD ── */
+        .video-card {
+            background: linear-gradient(145deg, rgba(30,35,60,0.9), rgba(15,20,45,0.95));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 1rem 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+            animation: cardIn 0.5s ease both;
+        }
+
+        .video-card:active {
+            transform: scale(0.95) translateY(2px);
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Thumbnail placeholder */
+        .card-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(236,72,153,0.15));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 1px solid rgba(255,255,255,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.04));
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        /* ── 3D BUTTONS ── */
+        .btn {
+            flex: 1;
+            padding: 10px 6px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1),
+                        box-shadow 0.15s ease,
+                        filter 0.15s ease;
+            letter-spacing: 0.3px;
+            user-select: none;
+            -webkit-user-select: none;
+            outline: none;
+        }
+
+        /* 3D effect via bottom border shadow */
+        .btn-open {
+            background: linear-gradient(160deg, #818cf8, #6366f1, #4f46e5);
+            box-shadow: 0 6px 0 #3730a3, 0 8px 20px rgba(99,102,241,0.5);
+        }
+
+        .btn-open:active {
+            transform: translateY(4px) scale(0.97);
+            box-shadow: 0 2px 0 #3730a3, 0 4px 10px rgba(99,102,241,0.4);
+        }
+
+        .btn-download {
+            background: linear-gradient(160deg, #34d399, #10b981, #059669);
+            box-shadow: 0 6px 0 #065f46, 0 8px 20px rgba(16,185,129,0.5);
+        }
+
+        .btn-download:active {
+            transform: translateY(4px) scale(0.97);
+            box-shadow: 0 2px 0 #065f46, 0 4px 10px rgba(16,185,129,0.4);
+        }
+
+        /* Ripple */
+        .btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.35);
+            transform: scale(0);
+            animation: rippleAnim 0.5s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ── DOWNLOAD TOAST ── */
+        #download-overlay {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(15,20,45,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 14px 20px;
+            z-index: 9999;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            min-width: 260px;
+            max-width: 90vw;
+            text-align: center;
+            animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        #download-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        #download-bar-wrap {
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        #download-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6366f1, #10b981);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+            box-shadow: 0 0 10px rgba(99,102,241,0.6);
+        }
+
+        /* ── MODAL ── */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.97);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .modal-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+
+        .btn-back {
+            background: linear-gradient(160deg, #f87171, #ef4444, #dc2626);
+            box-shadow: 0 5px 0 #991b1b, 0 8px 20px rgba(239,68,68,0.5);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-back:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #991b1b, 0 4px 10px rgba(239,68,68,0.4);
+        }
+
+        .modal-dl-btn {
+            background: linear-gradient(160deg, #34d399, #10b981, #059669);
+            box-shadow: 0 5px 0 #065f46, 0 8px 20px rgba(16,185,129,0.5);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .modal-dl-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #065f46, 0 4px 10px rgba(16,185,129,0.4);
+        }
+
+        .modal video {
+            width: 100%;
+            max-width: 820px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            background: #000;
+            display: block;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 820px;
+        }
+
+        .video-logo {
+            position: absolute;
+            bottom: 48px;
+            right: 12px;
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            border-radius: 50%;
+            opacity: 0.75;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7));
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { opacity: 0.75; transform: scale(1); }
+            50%       { opacity: 1;    transform: scale(1.07); }
+        }
+
+        /* stagger card animations */
+        .video-card:nth-child(1)  { animation-delay: 0.05s; }
+        .video-card:nth-child(2)  { animation-delay: 0.10s; }
+        .video-card:nth-child(3)  { animation-delay: 0.15s; }
+        .video-card:nth-child(4)  { animation-delay: 0.20s; }
+        .video-card:nth-child(5)  { animation-delay: 0.25s; }
+        .video-card:nth-child(6)  { animation-delay: 0.30s; }
+        .video-card:nth-child(7)  { animation-delay: 0.35s; }
+        .video-card:nth-child(8)  { animation-delay: 0.40s; }
+        .video-card:nth-child(9)  { animation-delay: 0.45s; }
+        .video-card:nth-child(10) { animation-delay: 0.50s; }
+        .video-card:nth-child(11) { animation-delay: 0.55s; }
+        .video-card:nth-child(12) { animation-delay: 0.60s; }
+        .video-card:nth-child(13) { animation-delay: 0.65s; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo-icon">🎬</div>
+            <h1>Annu</h1>
+            <span class="video-count">13 Videos</span>
+        </div>
+    </header>
+
+    <div class="container" id="gallery-container"></div>
+
+    <div id="download-overlay">
+        <div id="download-label">Downloading...</div>
+        <div id="download-bar-wrap"><div id="download-bar"></div></div>
+    </div>
+
+    <div id="videoModal" class="modal">
+        <div class="modal-header">
+            <button class="btn-back" onclick="closeVideo()">⬅ Back</button>
+            <button class="modal-dl-btn" onclick="downloadVideo(modalVideo.src, currentVideoNumber)">⬇ Download</button>
+        </div>
+        <div class="video-wrapper">
+            <video id="modalVideo" controls autoplay playsinline></video>
+            <img src="OIP.webp" class="video-logo" alt="logo">
+        </div>
+    </div>
+
+    <script>
+        const videoSources = [
+            "1.mp4","2.mp4","3.mp4","4.mp4","5.mp4","6.mp4","7.mp4",
+            "8.mp4","9.mp4","10.mp4","11.mp4","12.mp4","13.mp4"
+        ];
+
+        const emojis = ["🎥","🎞","📽","🎬","🎦","📹","🎥","🎞","📽","🎬","🎦","📹","🎥"];
+
+        const container = document.getElementById('gallery-container');
+        const modal     = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+
+        // Build cards
+        videoSources.forEach((src, i) => {
+            const n = i + 1;
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <div class="card-thumb">${emojis[i]}</div>
+                <div class="card-title">Video ${n}</div>
+                <div class="btn-group">
+                    <button class="btn btn-open" onclick="openVideo('${src}',${n})">▶ Play</button>
+                    <button class="btn btn-download" onclick="downloadVideo('${src}',${n})">⬇ Save</button>
+                </div>`;
+            container.appendChild(card);
+        });
+
+        // Ripple effect on all buttons
+        document.addEventListener('pointerdown', e => {
+            const btn = e.target.closest('.btn, .btn-back, .modal-dl-btn');
+            if (!btn) return;
+            const r = document.createElement('span');
+            r.className = 'ripple';
+            const rect = btn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+            btn.appendChild(r);
+            r.addEventListener('animationend', () => r.remove());
+        });
+
+        // Download
+        function downloadVideo(src, number) {
+            const overlay = document.getElementById('download-overlay');
+            const bar     = document.getElementById('download-bar');
+            const label   = document.getElementById('download-label');
+
+            overlay.style.display = 'block';
+            label.textContent = `⬇ Downloading Video ${number}...`;
+            bar.style.width = '0%';
+
+            let p = 0;
+            const iv = setInterval(() => {
+                p += Math.random() * 18;
+                if (p >= 90) { p = 90; clearInterval(iv); }
+                bar.style.width = p + '%';
+            }, 180);
+
+            const a = document.createElement('a');
+            a.href = src;
+            a.download = `Annu_Video_${number}.mp4`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => {
+                clearInterval(iv);
+                bar.style.width = '100%';
+                label.textContent = '✅ Download Started!';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    bar.style.width = '0%';
+                }, 2000);
+            }, 1500);
+        }
+
+        // Open modal
+        let currentVideoNumber = 1;
+        function openVideo(src, number) {
+            modalVideo.src = src;
+            currentVideoNumber = number;
+            modal.style.display = 'flex';
+            modalVideo.play();
+        }
+
+        // Close modal
+        function closeVideo() {
+            modal.style.display = 'none';
+            modalVideo.pause();
+            modalVideo.src = '';
+        }
+    </script>
+</body>
+</html>
